@@ -96,6 +96,22 @@ app.layout = html.Div(children=[
                     )],
                     width="auto"
             ),
+            dbc.Col(children=[html.P('Time interval',style={'font-size':'16px','font-weight': 'bold',"color": "#7c795d"}),
+                    dcc.Dropdown(
+                        id='data-time-interval',
+                        options=[
+                            {'label': '6:00 - 18:00', 'value': '06'},
+                            {'label': '24 hours', 'value': '00'}
+                        ],
+                        value='06',
+                        style={
+                            'width': '150px',
+                            'height': '50%',
+                            'mergin-left': '50px'
+                            }
+                    )],
+                    width="auto"
+            ),
             dbc.Col(children=[html.P('Date',style={'font-size':'16px','font-weight': 'bold',"color": "#7c795d"}),
                     dcc.DatePickerSingle(
                     id='my-date-picker-single',
@@ -169,9 +185,10 @@ def export_csv(n_nlicks,date):
     Input('interval-component', 'n_intervals'),
     Input('my-date-picker-single', 'date'),
     Input('refresh-btn', 'n_clicks'),
-    Input('sample-time-interval', 'value')]
+    Input('sample-time-interval', 'value'),
+    Input('data-time-interval', 'value')]
     )
-def update_output(parameter, sensor_tag, n_intervals,date,n_clicks,sample_interval):
+def update_output(parameter, sensor_tag, n_intervals,date,n_clicks,sample_interval, data_interval):
     if date is not None:
         date = dt.strptime(re.split('T| ', date)[0], '%Y-%m-%d')
         date_string = date.strftime("%Y%m%d")
@@ -179,8 +196,9 @@ def update_output(parameter, sensor_tag, n_intervals,date,n_clicks,sample_interv
 
     df = get_and_condition_data(data_source)
     fig = go.Figure()
-    start_time = str(date) + " 06:00:00"
-    df = df[df['Time'] > start_time]
+    start_time = str(date) + " " + data_interval +":00:00"
+    end_time = str(date) + " " + ("17" if int(data_interval) else "23" ) +":59:59"
+    df = df[(df['Time'] > start_time) & (df['Time'] < end_time)]
     
     for key, grp in df.groupby([sensor_tag]):
         sample_interval = int(sample_interval)
