@@ -135,6 +135,19 @@ app.layout = html.Div(children=[
 )
 
 @app.callback(
+    [Output('my-date-picker-single', 'max_date_allowed'),
+    Output('my-date-picker-single', 'date')],
+    [Input('interval-component', 'n_intervals')],
+    [State('my-date-picker-single', 'date'),
+    State('my-date-picker-single', 'max_date_allowed')]
+    )
+def change(interval, date, max_date):
+    if(date != max_date and dt.now().hour >= 0):
+        return datetime.date.today(), datetime.date.today()
+    else:
+        return max_date, date
+
+@app.callback(
     Output("download", "data"),
     [Input("export_btn", "n_clicks")],
     [State('my-date-picker-single', 'date')]
@@ -184,7 +197,7 @@ def update_output(parameter, sensor_tag, n_intervals,date,n_clicks,sample_interv
         "yaxis": {
             "title": {"text":units[parameter]}
             },
-            "uirevision":parameter
+            "uirevision":date
         }
     return fig, parameter
 
