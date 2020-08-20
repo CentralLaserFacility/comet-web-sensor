@@ -1,7 +1,8 @@
 import urllib.request
 import urllib.error
 import xml.etree.ElementTree as ET
-import datetime
+from datetime import datetime as dt
+from datetime import timezone
 import time
 import socket
 import threading
@@ -27,13 +28,14 @@ class Sensor:
             "CO2 level": "-",
         }
         self._data_received = False
+        self._last_successful_read = dt.now(timezone.utc)
         self._read_thread = None
 
     def _format_timestamp(self, isotime, format="%m/%d/%Y %H:%M:%S"):
-        return datetime.datetime.fromisoformat(isotime).strftime(format)
+        return dt.fromisoformat(isotime).strftime(format)
 
     def _generate_timestamp(self, format="%m/%d/%Y %H:%M:%S"):
-        return datetime.datetime.now().strftime(format)
+        return dt.now().strftime(format)
 
     def _read_xml_from_web(self):
         try:
@@ -62,7 +64,7 @@ class Sensor:
     def _get_latest_data(self, interval=60):
         while True:
             xml = self._read_xml_from_web()
-            #xml = self._read_xml_from_file()
+            # xml = self._read_xml_from_file()
             if not self._data_received:
                 data = self._sub_data_with_error("connection")
             elif not self._xml_is_valid(xml):
@@ -73,7 +75,9 @@ class Sensor:
                     for child in xml
                     if child.findall("unit")
                 }
-                data["Time"] = self._format_timestamp(xml.findtext("time"))
+                time_string = xml.findtext("time")
+                data["Time"] = self._format_timestamp(time_string)
+                self._last_successful_read = dt.fromisoformat(time_string)
             self._latest_data = data
             time.sleep(interval)
 
@@ -81,6 +85,10 @@ class Sensor:
         err_dict = {field: reason for field in self._data_fields}
         err_dict["Time"] = self._generate_timestamp()
         return err_dict
+
+    @property
+    def seconds_since_successful_read(self):
+        return (dt.now(timezone.utc) - self._last_successful_read).seconds
 
     @property
     def xml_data(self):
