@@ -18,6 +18,7 @@ import base64
 import dash_table
 import math
 from configparser import ConfigParser
+import dash_daq as daq
 
 
 server = Flask(__name__)
@@ -292,7 +293,33 @@ app.layout = html.Div(
                         ),
                         Download(id="download-stats")
                 ]
-            )
+            ),
+            dcc.Tab(
+                label='Sensors Status',
+
+                children = [
+                dbc.Row(
+                [
+                    dbc.Col(
+                        id = "sensors-alive",
+                        children=[],
+                        width="50%",
+                    ),
+                    dbc.Col(
+                        children=[
+                            dash_table.DataTable(
+                            id="table-alive",
+                            columns=[
+                                {"id": "name", "name": "Name"},
+                                {"id": "status", "name": "Status"},
+                            ],
+                            style_table={"margin-left": "5%", "width": "45%"},
+                            style_cell={"text-align": "left", "width": "150px"},
+                        )
+                ]
+            ),
+                ])
+                ])
         ]),
     dcc.ConfirmDialogProvider(
             children=html.Button(
@@ -361,6 +388,8 @@ def export_stats(n_clicks, date, parameter):
         Output("plot-title", "children"),
         Output("table", "data"),
         Output("stats-plot", "figure"),
+        Output("sensors-alive", "children"),
+        Output("table-alive", "data")
     ],
     [
         Input("parameter-picker", "value"),
@@ -441,7 +470,20 @@ def update_output(
             {"yaxis": {"title": {"text": units[parameter]}}, "uirevision": date}
         )
 
-    return fig_main, parameter, table_data, fig_stats
+    sensors_status = build_sensors_status()
+    df2 = pd.read_csv("sensors_status.csv")
+    table_data_alive = []
+    for i in range (len(df2)):
+        table_data_alive.append(
+            {
+                "name": df2.loc[i, "name"],
+                "status":df2.loc[i, "status"],
+                #"background":"red" if(df.loc[i, "status"] == "disconnected") else "green",
+                "fill_color":'red',
+            }
+        )
+
+    return fig_main, parameter, table_data, fig_stats, sensors_status, table_data_alive
 
 
 def make_scatter(x_vals, y_vals, key, colour, leg):
@@ -451,7 +493,7 @@ def make_scatter(x_vals, y_vals, key, colour, leg):
         name=key,
         mode="lines + markers",
         marker=dict(color=colour),
-        connectgaps=True,
+        connectgaps=False,
         legendgroup=key,
         showlegend=leg,
     )
@@ -490,6 +532,31 @@ def build_table(df, sensor_tag, parameter):
         )
     return table_data
 
+def build_sensors_status():
+    df = pd.read_csv("sensors_status.csv")
+    leds = []
+    
+    for i in range (len(df)):
+        leds.append(daq.Indicator(
+                label={
+                    'label': df.loc[i, "name"],
+                    'style': {
+                        'text-align': "left",
+                        "justify":"left",
+                        "position":"left"
+                    }
+                },
+                color="red" if(df.loc[i, "status"] == "disconnected") else "green",
+                labelPosition = "left",
+                style={
+                    "margin-left":"20px",
+                    "width": "170px",
+                    "margin-top": "20px",
+                },
+            )
+        )
+
+    return leds
 
 def get_and_condition_data(source):
     df = pd.read_csv(
