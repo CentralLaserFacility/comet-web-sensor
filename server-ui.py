@@ -298,27 +298,31 @@ app.layout = html.Div(
                 label='Sensors Status',
 
                 children = [
-                dbc.Row(
-                [
-                    dbc.Col(
-                        id = "sensors-alive",
-                        children=[],
-                        width="50%",
-                    ),
-                    dbc.Col(
-                        children=[
-                            dash_table.DataTable(
+                    dash_table.DataTable(
                             id="table-alive",
                             columns=[
                                 {"id": "name", "name": "Name"},
                                 {"id": "status", "name": "Status"},
                             ],
-                            style_table={"margin-left": "5%", "width": "45%"},
-                            style_cell={"text-align": "left", "width": "150px"},
+                            style_table={"margin-left": "5%", "width": "20%","margin-top":"20px"},
+                            style_cell={"text-align": "left"},
+                            style_data_conditional=[
+                            {
+                                'if': {
+                                    'filter_query': '{status} eq "connected"',
+                                    'column_id': 'status'
+                                },
+                                'backgroundColor': '#98ff98'
+                            },
+                            {
+                                'if': {
+                                    'filter_query': '{status} eq "disconnected"',
+                                    'column_id': 'status'
+                                },
+                                'backgroundColor': '#ff4040'
+                            },
+                        ]
                         )
-                ]
-            ),
-                ])
                 ])
         ]),
     dcc.ConfirmDialogProvider(
@@ -388,7 +392,6 @@ def export_stats(n_clicks, date, parameter):
         Output("plot-title", "children"),
         Output("table", "data"),
         Output("stats-plot", "figure"),
-        Output("sensors-alive", "children"),
         Output("table-alive", "data")
     ],
     [
@@ -470,20 +473,10 @@ def update_output(
             {"yaxis": {"title": {"text": units[parameter]}}, "uirevision": date}
         )
 
-    sensors_status = build_sensors_status()
-    df2 = pd.read_csv("sensors_status.csv")
-    table_data_alive = []
-    for i in range (len(df2)):
-        table_data_alive.append(
-            {
-                "name": df2.loc[i, "name"],
-                "status":df2.loc[i, "status"],
-                #"background":"red" if(df.loc[i, "status"] == "disconnected") else "green",
-                "fill_color":'red',
-            }
-        )
+    table_sensors_alive = build_sensors_status()
+    
 
-    return fig_main, parameter, table_data, fig_stats, sensors_status, table_data_alive
+    return fig_main, parameter, table_data, fig_stats, table_sensors_alive
 
 
 def make_scatter(x_vals, y_vals, key, colour, leg):
@@ -533,30 +526,17 @@ def build_table(df, sensor_tag, parameter):
     return table_data
 
 def build_sensors_status():
-    df = pd.read_csv("sensors_status.csv")
-    leds = []
-    
-    for i in range (len(df)):
-        leds.append(daq.Indicator(
-                label={
-                    'label': df.loc[i, "name"],
-                    'style': {
-                        'text-align': "left",
-                        "justify":"left",
-                        "position":"left"
-                    }
-                },
-                color="red" if(df.loc[i, "status"] == "disconnected") else "green",
-                labelPosition = "left",
-                style={
-                    "margin-left":"20px",
-                    "width": "170px",
-                    "margin-top": "20px",
-                },
-            )
+    df2 = pd.read_csv("sensors_status.csv")
+    table_data_alive = []
+    for i in range (len(df2)):
+        table_data_alive.append(
+            {
+                "name": df2.loc[i, "name"],
+                "status":df2.loc[i, "status"],
+            }
         )
 
-    return leds
+    return table_data_alive
 
 def get_and_condition_data(source):
     df = pd.read_csv(
