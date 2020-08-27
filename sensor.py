@@ -12,7 +12,8 @@ import http.client
 class Sensor:
     def __init__(self, parms):
         self._ip = parms["ip"]
-        self._name = parms["name"]
+        self._name = parms.get("name", self._ip)
+        self._contact_email = parms.get("email", "an.address@stfc.ac.uk")
         self._data_fields = [
             "Time",
             "Temperature",
@@ -91,6 +92,10 @@ class Sensor:
         return (dt.now(timezone.utc) - self._last_successful_read).seconds
 
     @property
+    def time_of_last_successful_read(self):
+        return self._last_successful_read.strftime(format="%m/%d/%Y %H:%M:%S")
+
+    @property
     def xml_data(self):
         return self._read_xml_from_web()
 
@@ -122,6 +127,10 @@ class Sensor:
     @property
     def name(self):
         return self._name
+
+    @property
+    def contact_email(self):
+        return self._contact_email
 
     def start_data_collection(self, interval=60):
         if not self._read_thread:

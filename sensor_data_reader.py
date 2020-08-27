@@ -2,6 +2,8 @@ import os, datetime, time
 from configparser import ConfigParser
 from pathlib import Path
 from sensor import Sensor
+import smtplib, ssl
+from email.message import EmailMessage
 
 
 class SensorDataReader:
@@ -48,10 +50,15 @@ class SensorDataReader:
     def _check_sensor_status(self, sensor):
         if sensor.seconds_since_successful_read > self._timeout_value:
             print(
-                "{} hasn't been read for {} seconds".format(
-                    sensor.name, sensor.seconds_since_successful_read
+                "{} (ip: {}) hasn't been read for {} seconds".format(
+                    sensor.name, sensor.ip, sensor.seconds_since_successful_read
                 )
-                # TODO send an email to someone
+            )
+        else:
+            print(
+                "{} (ip: {}) read {} seconds ago".format(
+                    sensor.name, sensor.ip, sensor.seconds_since_successful_read
+                )
             )
 
     def start(self):
