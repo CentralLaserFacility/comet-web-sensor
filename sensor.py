@@ -1,7 +1,8 @@
 import urllib.request
 import urllib.error
 import xml.etree.ElementTree as ET
-import datetime
+from datetime import datetime as dt
+from datetime import timezone
 import time
 import socket
 import threading
@@ -11,7 +12,8 @@ import http.client
 class Sensor:
     def __init__(self, parms):
         self._ip = parms["ip"]
-        self._name = parms["name"]
+        self._name = parms.get("name", self._ip)
+        self._contact_email = parms.get("email", "an.address@stfc.ac.uk")
         self._data_fields = [
             "Time",
             "Temperature",
@@ -27,10 +29,14 @@ class Sensor:
             "CO2 level": "-",
         }
         self._data_received = False
+        self._last_successful_read = dt.now(timezone.utc)
         self._read_thread = None
 
+    def _format_timestamp(self, isotime, format="%m/%d/%Y %H:%M:%S"):
+        return dt.fromisoformat(isotime).strftime(format)
+
     def _generate_timestamp(self, format="%m/%d/%Y %H:%M:%S"):
-        return datetime.datetime.now().strftime(format)
+        return dt.now().strftime(format)
 
     def _read_xml_from_web(self):
         try:
@@ -70,7 +76,9 @@ class Sensor:
                     for child in xml
                     if child.findall("unit")
                 }
-                data["Time"] = self._generate_timestamp()
+                time_string = xml.findtext("time")
+                data["Time"] = self._format_timestamp(time_string)
+                self._last_successful_read = dt.fromisoformat(time_string)
             self._latest_data = data
             time.sleep(interval)
 
@@ -78,6 +86,14 @@ class Sensor:
         err_dict = {field: reason for field in self._data_fields}
         err_dict["Time"] = self._generate_timestamp()
         return err_dict
+
+    @property
+    def seconds_since_successful_read(self):
+        return (dt.now(timezone.utc) - self._last_successful_read).seconds
+
+    @property
+    def time_of_last_successful_read(self):
+        return self._last_successful_read.strftime(format="%m/%d/%Y %H:%M:%S")
 
     @property
     def xml_data(self):
@@ -112,6 +128,10 @@ class Sensor:
     def name(self):
         return self._name
 
+    @property
+    def contact_email(self):
+        return self._contact_email
+
     def start_data_collection(self, interval=60):
         if not self._read_thread:
             self._read_thread = threading.Thread(
@@ -120,4 +140,8 @@ class Sensor:
             self._read_thread.start()
         else:
             print("Data collection thread already running")
-            
+
+
+if __name__ == "__main__":
+    s = Sensor({"ip": "1.2.3.4", "name": "test_sensor"})
+    s.start_data_collection(10)
