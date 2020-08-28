@@ -18,7 +18,6 @@ import base64
 import dash_table
 import math
 from configparser import ConfigParser
-import dash_daq as daq
 
 
 server = Flask(__name__)
@@ -507,15 +506,13 @@ def setup_graph_title(title_string):
 
 def get_data_in_time_interval(data_interval, df):
     start_time, end_time = data_interval.split(",")
-    df = df.set_index("Time")
-    #df = df.between_time(start_time, end_time)
-    df = df.reset_index()
+    df = df.set_index("Time").between_time(start_time, end_time).reset_index()
     return df
 
 
 def build_table(df, sensor_tag, parameter):
     df = df.set_index("Time")
-    #df = df.between_time(work_day_start, work_day_end)
+    df = df.between_time(work_day_start, work_day_end)
     table_data = []
     for key, grp in df.groupby([sensor_tag]):
         if math.isnan(grp[parameter].mean()):
