@@ -303,9 +303,12 @@ app.layout = html.Div(
                             columns=[
                                 {"id": "name", "name": "Name"},
                                 {"id": "timestamp", "name": "Timestamp"},
+                                {"id": "timeout", "name": "timeout"},
                             ],
                             style_table={"margin-left": "5%", "width": "20%","margin-top":"20px"},
                             style_cell={"text-align": "left"},
+                            hidden_columns = ['timeout'],
+                            css=[{"selector": ".show-hide", "rule": "display: none"}],
                             style_data_conditional=[
                             {
                                 'if': {
@@ -320,7 +323,7 @@ app.layout = html.Div(
                                     'column_id': 'timestamp'
                                 },
                                 'backgroundColor': '#ff4040'
-                            },
+                            }
                         ]
                         )
                 ])
@@ -505,14 +508,14 @@ def setup_graph_title(title_string):
 def get_data_in_time_interval(data_interval, df):
     start_time, end_time = data_interval.split(",")
     df = df.set_index("Time")
-    df = df.between_time(start_time, end_time)
+    #df = df.between_time(start_time, end_time)
     df = df.reset_index()
     return df
 
 
 def build_table(df, sensor_tag, parameter):
     df = df.set_index("Time")
-    df = df.between_time(work_day_start, work_day_end)
+    #df = df.between_time(work_day_start, work_day_end)
     table_data = []
     for key, grp in df.groupby([sensor_tag]):
         if math.isnan(grp[parameter].mean()):
@@ -536,6 +539,7 @@ def build_sensors_status():
             {
                 "name": sensors_status.loc[i, "name"],
                 "timestamp":sensors_status.loc[i, "timestamp"],
+                "timeout":sensors_status.loc[i, "timeout"],
             }
         )
 
