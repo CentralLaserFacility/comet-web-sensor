@@ -4,6 +4,11 @@ from pathlib import Path
 from sensor import Sensor
 import smtplib, ssl
 from email.message import EmailMessage
+import sys
+
+if(float(sys.version[:3])<3.7):
+    from backports.datetime_fromisoformat import MonkeyPatch
+    MonkeyPatch.patch_fromisoformat()
 
 
 class SensorDataReader:
