@@ -302,22 +302,22 @@ app.layout = html.Div(
                             id="table-alive",
                             columns=[
                                 {"id": "name", "name": "Name"},
-                                {"id": "status", "name": "Status"},
+                                {"id": "timestamp", "name": "Timestamp"},
                             ],
                             style_table={"margin-left": "5%", "width": "20%","margin-top":"20px"},
                             style_cell={"text-align": "left"},
                             style_data_conditional=[
                             {
                                 'if': {
-                                    'filter_query': '{status} eq "connected"',
-                                    'column_id': 'status'
+                                    'filter_query': '{timeout} eq "valid"',
+                                    'column_id': 'timestamp'
                                 },
                                 'backgroundColor': '#98ff98'
                             },
                             {
                                 'if': {
-                                    'filter_query': '{status} eq "disconnected"',
-                                    'column_id': 'status'
+                                    'filter_query': '{timeout} eq "invalid"',
+                                    'column_id': 'timestamp'
                                 },
                                 'backgroundColor': '#ff4040'
                             },
@@ -504,7 +504,9 @@ def setup_graph_title(title_string):
 
 def get_data_in_time_interval(data_interval, df):
     start_time, end_time = data_interval.split(",")
-    df = df.set_index("Time").between_time(start_time, end_time).reset_index()
+    df = df.set_index("Time")
+    df = df.between_time(start_time, end_time)
+    df = df.reset_index()
     return df
 
 
@@ -526,13 +528,14 @@ def build_table(df, sensor_tag, parameter):
     return table_data
 
 def build_sensors_status():
-    df2 = pd.read_csv("sensors_status.csv")
+    sensors_csv = data_file_location + "/sensors_status.csv"
+    sensors_status = pd.read_csv(sensors_csv)
     table_data_alive = []
-    for i in range (len(df2)):
+    for i in range (len(sensors_status)):
         table_data_alive.append(
             {
-                "name": df2.loc[i, "name"],
-                "status":df2.loc[i, "status"],
+                "name": sensors_status.loc[i, "name"],
+                "timestamp":sensors_status.loc[i, "timestamp"],
             }
         )
 

@@ -4,6 +4,8 @@ from pathlib import Path
 from sensor import Sensor
 import smtplib, ssl
 from email.message import EmailMessage
+from backports.datetime_fromisoformat import MonkeyPatch
+MonkeyPatch.patch_fromisoformat()
 
 
 class SensorDataReader:
@@ -47,19 +49,17 @@ class SensorDataReader:
         for sensor in self._sensors:
             sensor.start_data_collection(self._sample_interval)
 
-    def _check_sensor_status(self, sensor):
-        if sensor.seconds_since_successful_read > self._timeout_value:
-            print(
-                "{} (ip: {}) hasn't been read for {} seconds".format(
-                    sensor.name, sensor.ip, sensor.seconds_since_successful_read
-                )
-            )
-        else:
-            print(
-                "{} (ip: {}) read {} seconds ago".format(
-                    sensor.name, sensor.ip, sensor.seconds_since_successful_read
-                )
-            )
+    def _check_sensor_status(self):
+        sensors_status = self._data_file_location + os.sep + "sensors_status.csv"
+        first_line_in_file = "name,timestamp,timeout\n"
+
+        with open(sensors_status, "w") as f:
+            f.write(first_line_in_file)
+            for s in self._sensors:
+                if s.seconds_since_successful_read > self._timeout_value:
+                    f.write(s.name+","+s.time_of_last_successful_read+","+"invalid\n")
+                else:
+                    f.write(s.name+","+s.time_of_last_successful_read+","+"valid\n")
 
     def start(self):
         self._start_sensors()
@@ -68,7 +68,7 @@ class SensorDataReader:
             with open(csv_file, "a") as f:
                 for s in self._sensors:
                     f.write(s.ip + "," + s.name + "," + s.latest_csv_data)
-                    self._check_sensor_status(s)
+                self._check_sensor_status()
             time.sleep(self._sample_interval)
 
 
