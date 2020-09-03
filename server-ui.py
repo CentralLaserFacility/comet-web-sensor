@@ -18,6 +18,7 @@ import base64
 import dash_table
 import math
 from configparser import ConfigParser
+import dash_daq as daq
 
 
 server = Flask(__name__)
@@ -203,7 +204,7 @@ app.layout = html.Div(
                                         {"label": "6:00 - 18:00", "value": "06:00,18:00"},
                                         {"label": "24 hours", "value": "00:00,23:59"},
                                     ],
-                                    value="06:00,18:00",
+                                    value="00:00,23:59",
                                     style={
                                         "width": "150px",
                                         "height": "50%",
@@ -244,6 +245,13 @@ app.layout = html.Div(
                                 },
                             ),
                             width="auto",
+                        ),
+                        dbc.Col(
+                            id = "sensors-led-daily",
+                            width="auto",
+                            style = {
+                                "margin-top": "27px",
+                            }
                         )
                     ],
             style={"padding-left": "100px", "padding-top": "20px"},
@@ -277,6 +285,11 @@ app.layout = html.Div(
             dcc.Tab(
                 label='Statistics',
                 children=[
+                    dbc.Col(
+                            id = "sensors-led-stats",
+                            style = {"width" : "240px",
+                                     "margin-top": "15px"}
+                        ),
                     dcc.Graph(id="stats-plot", style={"height": 900}),
                     html.Button(
                             "Export Data",
@@ -394,7 +407,9 @@ def export_stats(n_clicks, date, parameter):
         Output("plot-title", "children"),
         Output("table", "data"),
         Output("stats-plot", "figure"),
-        Output("table-alive", "data")
+        Output("table-alive", "data"),
+        Output('sensors-led-daily', 'children'),
+        Output('sensors-led-stats', 'children')
     ],
     [
         Input("parameter-picker", "value"),
@@ -476,10 +491,32 @@ def update_output(
         )
 
     table_sensors_alive = build_sensors_status()
+    sensors_alive_daily = get_sensors_status(0)
+    sensors_alive_stats = get_sensors_status(1)
     
 
-    return fig_main, parameter, table_data, fig_stats, table_sensors_alive
+    return fig_main, parameter, table_data, fig_stats, table_sensors_alive, sensors_alive_daily, sensors_alive_stats
 
+
+def get_sensors_status(position):
+    sensors_csv = data_file_location + "/sensors_status.csv"
+    sensors_status = pd.read_csv(sensors_csv)
+    led_color = "green"
+    name = "Sensors Connected"
+    label_pos = ["bottom","right"]
+
+    for i in range (len(sensors_status)):
+        if(sensors_status.loc[i, "timeout"] == "invalid"):
+            led_color = "red"
+            name = "Some Sensors Disconnected"
+
+    led = daq.Indicator(
+        labelPosition = label_pos[position],
+        color = led_color,
+        label = name
+        )
+
+    return led
 
 def make_scatter(x_vals, y_vals, key, colour, leg):
     return go.Scatter(
