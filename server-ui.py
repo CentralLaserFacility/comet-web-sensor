@@ -150,6 +150,13 @@ app.layout = html.Div(
                         ),
                     ],
                     width="auto",
+                ),
+                dbc.Col(
+                    id = "sensors-alive",
+                    width="auto",
+                    style = {
+                        "margin-top": "27px",
+                    }
                 )
             ],
             style={"padding-left": "100px", "padding-top": "50px","margin-bottom":"50px"},
@@ -245,13 +252,6 @@ app.layout = html.Div(
                                 },
                             ),
                             width="auto",
-                        ),
-                        dbc.Col(
-                            id = "sensors-led-daily",
-                            width="auto",
-                            style = {
-                                "margin-top": "27px",
-                            }
                         )
                     ],
             style={"padding-left": "100px", "padding-top": "20px"},
@@ -285,11 +285,6 @@ app.layout = html.Div(
             dcc.Tab(
                 label='Statistics',
                 children=[
-                    dbc.Col(
-                            id = "sensors-led-stats",
-                            style = {"width" : "240px",
-                                     "margin-top": "15px"}
-                        ),
                     dcc.Graph(id="stats-plot", style={"height": 900}),
                     html.Button(
                             "Export Data",
@@ -408,8 +403,7 @@ def export_stats(n_clicks, date, parameter):
         Output("table", "data"),
         Output("stats-plot", "figure"),
         Output("table-alive", "data"),
-        Output('sensors-led-daily', 'children'),
-        Output('sensors-led-stats', 'children')
+        Output('sensors-alive', 'children')
     ],
     [
         Input("parameter-picker", "value"),
@@ -491,27 +485,26 @@ def update_output(
         )
 
     table_sensors_alive = build_sensors_status()
-    sensors_alive_daily = get_sensors_status(0)
-    sensors_alive_stats = get_sensors_status(1)
+    sensors_alive = get_sensors_status()
+    #sensors_alive_stats = get_sensors_status(1)
     
 
-    return fig_main, parameter, table_data, fig_stats, table_sensors_alive, sensors_alive_daily, sensors_alive_stats
+    return fig_main, parameter, table_data, fig_stats, table_sensors_alive, sensors_alive
 
 
-def get_sensors_status(position):
+def get_sensors_status():
     sensors_csv = data_file_location + "/sensors_status.csv"
     sensors_status = pd.read_csv(sensors_csv)
     led_color = "green"
     name = "Sensors Connected"
-    label_pos = ["bottom","right"]
-
+    
     for i in range (len(sensors_status)):
         if(sensors_status.loc[i, "timeout"] == "invalid"):
             led_color = "red"
             name = "Some Sensors Disconnected"
 
     led = daq.Indicator(
-        labelPosition = label_pos[position],
+        labelPosition = "bottom",
         color = led_color,
         label = name
         )
