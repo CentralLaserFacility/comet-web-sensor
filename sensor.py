@@ -2,11 +2,12 @@ import urllib.request
 import urllib.error
 import xml.etree.ElementTree as ET
 from datetime import datetime as dt
-from datetime import timezone
+#from datetime import timezone
 import time
 import socket
 import threading
 import http.client
+from pytz import timezone
 
 
 class Sensor:
@@ -29,11 +30,14 @@ class Sensor:
             "CO2 level": "-",
         }
         self._data_received = False
-        self._last_successful_read = dt.now(timezone.utc)
+        self._last_successful_read = dt.now(timezone("UTC"))
         self._read_thread = None
 
+    def _format_timezone(self,isotime):
+        return dt.fromisoformat(isotime).astimezone(timezone('Europe/Dublin'))
+
     def _format_timestamp(self, isotime, format="%m/%d/%Y %H:%M:%S"):
-        return dt.fromisoformat(isotime).strftime(format)
+        return self._format_timezone(isotime).strftime(format)
 
     def _generate_timestamp(self, format="%m/%d/%Y %H:%M:%S"):
         return dt.now().strftime(format)
@@ -89,11 +93,11 @@ class Sensor:
 
     @property
     def seconds_since_successful_read(self):
-        return (dt.now(timezone.utc) - self._last_successful_read).seconds
+        return (dt.now(timezone("UTC")) - self._last_successful_read).seconds
 
     @property
     def time_of_last_successful_read(self):
-        return self._last_successful_read.strftime(format="%m/%d/%Y %H:%M:%S")
+        return self._last_successful_read.astimezone(timezone('Europe/Dublin')).strftime(format="%m/%d/%Y %H:%M:%S")
 
     @property
     def xml_data(self):

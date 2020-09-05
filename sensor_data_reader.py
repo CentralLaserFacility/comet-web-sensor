@@ -60,9 +60,9 @@ class SensorDataReader:
             f.write(first_line_in_file)
             for s in self._sensors:
                 if s.seconds_since_successful_read > self._timeout_value:
-                    f.write(s.name+","+s.time_of_last_successful_read+","+"invalid\n")
+                    f.write(s.name+","+str(s.time_of_last_successful_read)+","+"invalid\n")
                 else:
-                    f.write(s.name+","+s.time_of_last_successful_read+","+"valid\n")
+                    f.write(s.name+","+str(s.time_of_last_successful_read)+","+"valid\n")
 
     def start(self):
         self._start_sensors()
