@@ -30,7 +30,7 @@ class Sensor:
             "CO2 level": "-",
         }
         self._data_received = False
-        self._last_successful_read = dt.now(timezone("UTC"))
+        self._last_successful_read = dt.now()
         self._read_thread = None
 
     def _format_timezone(self,isotime):
@@ -82,7 +82,7 @@ class Sensor:
                 }
                 time_string = xml.findtext("time")
                 data["Time"] = self._format_timestamp(time_string)
-                self._last_successful_read = dt.fromisoformat(time_string)
+                self._last_successful_read = self._format_timezone(time_string)
             self._latest_data = data
             time.sleep(interval)
 
@@ -93,11 +93,11 @@ class Sensor:
 
     @property
     def seconds_since_successful_read(self):
-        return (dt.now(timezone("UTC")) - self._last_successful_read).seconds
+        return (dt.now() - self._last_successful_read.replace(tzinfo=None)).seconds
 
     @property
     def time_of_last_successful_read(self):
-        return self._last_successful_read.astimezone(timezone('Europe/Dublin')).strftime(format="%m/%d/%Y %H:%M:%S")
+        return self._last_successful_read.strftime(format="%m/%d/%Y %H:%M:%S")
 
     @property
     def xml_data(self):
