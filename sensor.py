@@ -33,11 +33,8 @@ class Sensor:
         self._last_successful_read = dt.now()
         self._read_thread = None
 
-    def _format_timezone(self,isotime):
-        return dt.fromisoformat(isotime).astimezone(timezone('Europe/Dublin'))
-
     def _format_timestamp(self, isotime, format="%m/%d/%Y %H:%M:%S"):
-        return self._format_timezone(isotime).strftime(format)
+        return dt.fromisoformat(isotime).astimezone(timezone('Europe/London')).strftime(format)
 
     def _generate_timestamp(self, format="%m/%d/%Y %H:%M:%S"):
         return dt.now().strftime(format)
@@ -82,7 +79,7 @@ class Sensor:
                 }
                 time_string = xml.findtext("time")
                 data["Time"] = self._format_timestamp(time_string)
-                self._last_successful_read = self._format_timezone(time_string)
+                self._last_successful_read = dt.strptime(data["Time"], "%m/%d/%Y %H:%M:%S")
             self._latest_data = data
             time.sleep(interval)
 
@@ -93,7 +90,7 @@ class Sensor:
 
     @property
     def seconds_since_successful_read(self):
-        return (dt.now() - self._last_successful_read.replace(tzinfo=None)).seconds
+        return (dt.now() - self._last_successful_read).seconds
 
     @property
     def time_of_last_successful_read(self):

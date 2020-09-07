@@ -208,8 +208,8 @@ app.layout = html.Div(
                                 dcc.Dropdown(
                                     id="data-time-interval",
                                     options=[
-                                        {"label": "6:00 - 18:00", "value": "06:00,18:00"},
                                         {"label": "24 hours", "value": "00:00,23:59"},
+                                        {"label": "6:00 - 18:00", "value": "06:00,18:00"},
                                     ],
                                     value="00:00,23:59",
                                     style={
