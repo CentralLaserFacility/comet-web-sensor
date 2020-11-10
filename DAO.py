@@ -19,6 +19,7 @@ class SensorsDAO:
         self.cluster = None
         self.session = None
         self.keyspace = 'sensors'
+        self.connection_status = False
         self.create_session()
 
 
@@ -26,11 +27,16 @@ class SensorsDAO:
         self.cluster.shutdown()
 
     def create_session(self):
-        self.cluster = Cluster(protocol_version=4)
-        self.session = self.cluster.connect(self.keyspace)
-        self.session.row_factory = pandas_factory
-        self.session.default_fetch_size = None
-        self.prepare_stmts()
+        try:
+            self.cluster = Cluster(protocol_version=4)
+            self.session = self.cluster.connect(self.keyspace)
+            self.session.row_factory = pandas_factory
+            self.session.default_fetch_size = None
+            self.connection_status = True
+            self.prepare_stmts()
+        except:
+            print("Connection refused!")
+            self.connection_status = False
         
     def prepare_stmts(self):
         """
@@ -67,39 +73,74 @@ class SensorsDAO:
         """
         retreive data from single date with specific columns
         """
-        return self.get_session().execute(SensorsDAO.get_data_single_stmt_spCol, [date])._current_rows
+        try:
+            if(self.connection_status == False):
+                self.create_session()
+            return self.get_session().execute(SensorsDAO.get_data_single_stmt_spCol, [date])._current_rows
+        except:
+            print("Data single spCol query failed!")
+            return []
 
     def get_data_single(self, date):
         """
         retreive data from single date with specific columns
         """
-        return self.get_session().execute(SensorsDAO.get_data_single_stmt, [date])._current_rows
+        try:
+            if(self.connection_status == False):
+                self.create_session()
+            return self.get_session().execute(SensorsDAO.get_data_single_stmt, [date])._current_rows
+        except:
+            print("Data single query failed!")
+            return []
         
     def get_data_range(self, start_date, end_date):
         """
         retrieve data within date range
         """
-        return self.get_session().execute(SensorsDAO.get_data_range_stmt, [start_date,end_date])._current_rows
+        try:
+            if(self.connection_status == False):
+                self.create_session()
+            return self.get_session().execute(SensorsDAO.get_data_range_stmt, [start_date,end_date])._current_rows
+        except:
+            print("Data range query failed!")
+            return []
 
     def get_stats(self,source):
         """
         Get statistics data
         """
-        return self.get_session().execute(SensorsDAO.get_stats_stmt[source])._current_rows
+        try:
+            if(self.connection_status == False):
+                self.create_session()
+            return self.get_session().execute(SensorsDAO.get_stats_stmt[source])._current_rows
+        except:
+            print("Statistics data query failed!")
+            return []
 
     def insert_data(self,data):
         """
         Insert sensor data into DB
         """
-        self.get_session().execute(SensorsDAO.insert_stmt,data)
+        try:
+            if(self.connection_status == False):
+                self.create_session()
+            self.get_session().execute(SensorsDAO.insert_stmt,data)
+        except:
+            print("Data Insertion failed!")
 
     def insert_stats(self,df):
         """
         Insert statistics data into DB
         """
-        for i in SensorsDAO.insert_stats_stmt:
-            for key,grp in df.groupby(['ip','date','name']):
-                self.get_session().execute(SensorsDAO.insert_stats_stmt[i],[key[1],key[0],key[2],np.max(grp[i]),np.mean(grp[i]),np.std(grp[i]) ] )
+        try:
+            if(self.connection_status == False):
+                self.create_session()
+
+            for i in SensorsDAO.insert_stats_stmt:
+                for key,grp in df.groupby(['ip','date','name']):
+                    self.get_session().execute(SensorsDAO.insert_stats_stmt[i],[key[1],key[0],key[2],np.max(grp[i]),np.mean(grp[i]),np.std(grp[i]) ] )
+        except:
+            print("Stats data Insertion failed!")
 
 def pandas_factory(colnames, rows):
         return pd.DataFrame(rows, columns=colnames)
