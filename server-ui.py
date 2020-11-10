@@ -19,9 +19,6 @@ import dash_table
 import math
 from configparser import ConfigParser
 import dash_daq as daq
-from cassandra.cluster import Cluster
-from cassandra.query import SimpleStatement
-from cassandra.query import dict_factory
 from DAO import SensorsDAO
 
 
@@ -1029,7 +1026,7 @@ def get_and_condition_data(date, start_date="", end_date=""):
     """
 
     if start_date == end_date:
-        df = db.get_data_single(date)
+        df = db.get_data_single_spCol(date)
 
     else:
         df = db.get_data_range(start_date, end_date)
