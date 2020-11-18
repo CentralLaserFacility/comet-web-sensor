@@ -1,25 +1,31 @@
-# comet-web-sensor
-STFC-wide project to collect and graph data from Comet T6640 networkable environment monitors. Collects CO2 PPM, temperature, relative humidity and dew point from one or more sensors via HTTP.
+# Docker Image: Comet-web-sensors
+Contains three containers:
+ - Cassandra Database
+ - Sensors data collection
+ - Sensors data plot
+ 
 
-**Currently in development - instructions below are NOT production-ready.**
+### Install docker
+wget -qO- https://get.docker.com/ |sh
 
-## Requirements
-- Apache Cassandra data store (https://cassandra.apache.org/download/)
-- Python 3
-- `python3-cassandra`
-- Pip
+### Install docker-compose
+pip3 install docker-compose==1.17.1
 
-## Setup
-1. Install Apache Cassandra
-1. Import schema with `cqlsh --file schema.cql`
-1. Create a Python virtual environment (optional but recommended)
-1. Install Pip requirements with `pip3 install --requirements requirements.txt`
+### Pull required docker images:
+sudo docker-compose pull
 
-## Running Data Collection
-From a shell, execute `./sensor_data.py`. This runs until terminated.
+### Build image:
+sudo docker-compose build
 
-## Running web UI
-From a shell, execute `./server-ui.py`. This starts a Flask server that runs until terminated. The server can be accessed on port 8051 by default.
+### All at once Pull, Build and Run image for the first time
+sudo docker-compose up --build -d
 
-## Configuration
-Edit `config.ini`. Sensors can be added in the `[sensors]` section in the format `IP address: Display name`. Polling interval is configurable (60s by default).
+### To run all containers:
+sudo docker-compose up -d
+
+### Stop all running containers
+sudo docker-compose down
+
+### List all running containers
+sudo docker ps
+Options: -a list all running and stopped containers
