@@ -6,12 +6,15 @@ services:
       build: ./data_collection
       volumes:
         - "./data_collection:/src"
-      depends_on:
-        - db
+#      depends_on:
+#        - db
       restart: always
+#      ports:
+#        - "127.0.0.1:9042:9042"
+      network_mode: "host"
 
   db:
-    image: cassandra:3.11
+    image: cassandra:4.0
     container_name: cassandra_db
     ports:
       - 9042:9042
@@ -19,7 +22,7 @@ services:
       - "./db_Cassandra/cassandra-init.sh:/cassandra-init.sh"
       - "./db_Cassandra/schema.cql:/schema.cql"
       - "/var/lib/cassandra:/var/lib/cassandra"
-    command: "sh /cassandra-init.sh"
+    #command: "sh /cassandra-init.sh"
     healthcheck:
       test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
 
@@ -28,7 +31,8 @@ services:
     container_name: plot
     ports:
       - 8051:8051
-    depends_on:
-      - db
+#    depends_on:
+#      - db
     volumes:
       - "./data_plot:/src"
+    network_mode: "host"

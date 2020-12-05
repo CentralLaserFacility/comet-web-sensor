@@ -30,7 +30,7 @@ class SensorsDAO:
 
     def create_session(self):
         try:
-            self.cluster = Cluster(["cassandra_db"],protocol_version=4)
+            self.cluster = Cluster(protocol_version=4)
             self.session = self.cluster.connect(self.keyspace)
             self.session.row_factory = pandas_factory
             self.session.default_fetch_size = None
