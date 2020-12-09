@@ -25,6 +25,7 @@ server = Flask(__name__)
 app = dash.Dash(
     __name__,
     server=server,
+    title="CLF CO2 Sensors",
     external_stylesheets=[
         dbc.themes.BOOTSTRAP,
         "https://codepen.io/chriddyp/pen/bWLwgP.css",
