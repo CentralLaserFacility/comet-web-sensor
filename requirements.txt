@@ -5,6 +5,7 @@ flask
 plotly
 dash_core_components
 dash_html_components
+dash-daq
 dash_bootstrap_components
 dash_extensions
 pybase64
