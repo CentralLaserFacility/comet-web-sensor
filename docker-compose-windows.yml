@@ -31,4 +31,3 @@ services:
       - db
     volumes:
       - "./data_plot:/src"
-    network_mode: "host"

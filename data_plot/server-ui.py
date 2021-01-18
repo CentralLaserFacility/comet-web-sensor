@@ -82,40 +82,13 @@ app.layout = html.Div(
                     width="10%",
                 ),
                 dbc.Col(
-                    children=[
-                        html.H1(
-                            "THIS IS DEVELOPMENT BRANCH IT CAN BE SWITCHED OFF ANYTIME",
-                            style={
-                                "text-align": "left",
-                                "font-family": "Trocchi",
-                                "color": "red",
-                                "width": "50%",
-                                "font-size": "20px",
-                            },
-                        ),
-                        html.Label(
-                            [
-                                "FOR STABLE VERSION\t",
-                                html.A("CLICK HERE", href="http://130.246.71.15:8050"),
-                            ],
-                            style={
-                                "text-align": "left",
-                                "font-family": "Trocchi",
-                                "color": "red",
-                                "width": "50%",
-                                "font-size": "20px",
-                            },
-                        ),
-                    ]
-                ),
-                dbc.Col(
                     children=html.H1(
                         id="plot-title",
                         style={
                             "font-family": "Trocchi",
                             "color": "#7c795d",
-                            "width": "60%",
-                            "margin-left": "-20%",
+                            "width": "90%",
+                            "text-align": "center",
                         },
                     )
                 ),
@@ -1052,4 +1025,4 @@ def get_sensor_datafile_name(date):
 
 
 if __name__ == "__main__":
-    app.run_server(port=8051, debug=False, host="0.0.0.0")
+    app.run_server(port=8050, debug=False, host="0.0.0.0")
