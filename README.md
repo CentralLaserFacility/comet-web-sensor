@@ -69,8 +69,8 @@ Options: -a list all running and stopped containers
     - FILES TO CHANGE BEFORE BUILD:
       - data_plot/DAO.py: Connect to DB container in Line 33: 
                             - self.cluster = Cluster(["cassandra_db"],protocol_version=4)
-    - Build and run doker containers: docker-compose-windows up –d --build  (this will take a few minutes)
-    - To initialize the database:
+    - Build and run doker containers: docker-compose -f docker-compose-windows.yml up –d --build  (this will take a few minutes)
+    - To initialize the database (Only needs to be done once)
       - docker exec -it cassandra_db sh
       - cqlsh --file schema.cql 
       - exit 
