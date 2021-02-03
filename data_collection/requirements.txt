@@ -1,0 +1,5 @@
+pandas
+numpy
+pybase64
+cassandra-driver
+pytz

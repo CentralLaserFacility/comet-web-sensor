@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  data-collect:
+      container_name: data_collection
+      build: ./data_collection
+      volumes:
+        - "./data_collection:/src"
+      depends_on:
+        - db
+      restart: always
+      network_mode: "host"
+
+  db:
+    image: cassandra:4.0
+    container_name: cassandra_db
+    ports:
+      - 9042:9042
+    volumes:
+      - "./db_Cassandra/schema.cql:/schema.cql"
+      - "/var/lib/cassandra:/var/lib/cassandra"
+    healthcheck:
+      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
+
+  plot-service:
+    build: ./data_plot
+    container_name: plot
+    ports:
+      - 8051:8051
+    depends_on:
+      - db
+    volumes:
+      - "./data_plot:/src"
