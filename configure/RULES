@@ -1,0 +1,8 @@
+# -*- mode: Makefile;-*-
+
+#install.pkgs: $(TOP)/scripts/required_pkgs.sh
+#	$(QUIET)sudo -E bash -c "$<"
+
+-include $(TOP)/configure/RULES_PKG
+include $(TOP)/configure/RULES_DB
+include $(TOP)/configure/RULES_SYSTEMD

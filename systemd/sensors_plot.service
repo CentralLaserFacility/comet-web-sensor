@@ -1,0 +1,14 @@
+[Unit]
+Description= CO2 Sensors Status
+After=multi-user.target
+
+
+[Service]
+ExecStart=/bin/python3 PATH/server-ui.py
+Type=simple
+StandardInput=tty-force
+
+[Install]
+WantedBy=multi-user.target
+Alias=sensors.service
+
