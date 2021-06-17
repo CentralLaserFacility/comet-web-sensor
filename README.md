@@ -9,7 +9,11 @@ STFC-wide project to collect and graph data from Comet T6640 networkable environ
 - python3-cassandra
 - Pip
 
-## Setup
+## Setup using Makefile
+'Run make'
+Python requiremetns will be installed in a virtual environment in the TOP directory
+
+## Setup manual
 1. Install Apache Cassandra
 1. Import schema with `cqlsh --file schema.cql`
 1. Create a Python virtual environment (optional but recommended)
