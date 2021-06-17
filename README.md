@@ -11,7 +11,8 @@ STFC-wide project to collect and graph data from Comet T6640 networkable environ
 
 ## Setup using Makefile
 'Run make'
-Python requiremetns will be installed in a virtual environment in the TOP directory
+- Python requiremetns will be installed in a virtual environment in the TOP directory
+- DB will be install on host
 
 ## Setup manual
 1. Install Apache Cassandra
