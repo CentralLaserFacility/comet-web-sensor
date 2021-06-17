@@ -1,11 +1,11 @@
 VENV_NAME?=PythonEnv
 VENV_ACTIVATE=. $(VENV_NAME)/bin/activate
-PYTHON=${VENV_NAME}/bin/python3.8
+PYTHON=${VENV_NAME}/bin/python
 
-CHECK:=$(shell python3.6 --version 2>/dev/null)
+CHECK_PYTHON:=$(shell python3 --version 2>/dev/null)
 
-prepare-dev:
- ifeq (,$(CHECK))
+Check-Python:
+ ifeq (,$(CHECK_PYTHON))
 	$(error "Python3 not installed")
  else
 	make venv
@@ -14,7 +14,7 @@ prepare-dev:
 venv: venv/touchfile
 
 venv/touchfile: requirements.txt
-	test -d $(VENV_NAME) || virtualenv -p python3.8 $(VENV_NAME)
+	test -d $(VENV_NAME) || virtualenv -p python3 $(VENV_NAME)
 	$(VENV_ACTIVATE); pip install -Ur requirements.txt
 	touch  $(VENV_NAME)/touchfile
 

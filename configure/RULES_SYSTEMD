@@ -1,8 +1,0 @@
-
-SYSTEMD_PATH:=/etc/systemd/system
-SYSTEMD_FILENAME:=sensors_plot.service
-
-conf.service:
-	sed -e s/PATH/$(TOP)/g $(TOP)/systemd/$(SYSTEMD_FILENAME)
-	sudo install -C $(TOP)/systemd/$(SYSTEMD_FILENAME) $(SYSTEMD_PATH)/
-	sudo systemctl daemon-reload
